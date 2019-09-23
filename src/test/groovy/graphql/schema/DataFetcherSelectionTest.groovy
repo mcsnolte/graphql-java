@@ -259,4 +259,34 @@ class DataFetcherSelectionTest extends Specification {
 
     }
 
+    def "from spectrum chat for hero()"() {
+        def query = '''{
+          hero(episode: NEWHOPE) {
+            id
+            name
+            ... on Character {
+              appearsIn
+            }
+            ... on Human {
+              homePlanet
+            }
+            ... on Droid {
+              primaryFunction
+            }
+          }
+        }
+        '''
+        when:
+        ExecutionInput input = ExecutionInput.newExecutionInput().query(query).variables([localeVar: "AU"]).build()
+        def executionResult = GraphQL.newGraphQL(executableStarWarsSchema).build().execute(input)
+        then:
+        executionResult.errors.isEmpty()
+        captureMap == [
+                name           : "name",
+                id             : "id",
+                appearsIn      : "appearsIn", // Shouldn't ...
+                homePlanet     : "homePlanet", // these...
+                primaryFunction: "primaryFunction", // be found?
+        ]
+    }
 }
